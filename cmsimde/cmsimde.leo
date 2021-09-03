@@ -2199,10 +2199,8 @@ def ssavePage():
     with open(config_dir + "content.htm", "w", encoding="utf-8") as file:
         for index in range(len(head)):
             if index == int(page_order):
-                # only allow saving, stop using csave
-                #if action == "save":
-                file.write(page_content)
-                """
+                if action == "save":
+                    file.write(page_content)
                 else:
                     # make orig and new html content into list
                     newSoup = bs4.BeautifulSoup(page_content, "html.parser")
@@ -2215,7 +2213,6 @@ def ssavePage():
                     for i in range(len(mergedList)):
                         newContent += mergedList[i]
                     file.write(newContent)
-                """
             else:
                 file.write("&lt;h"+str(level[index])+ "&gt;" + str(head[index]) + "&lt;/h" + \
                               str(level[index])+"&gt;"+str(page[index]))
@@ -2376,7 +2373,22 @@ img.add_border {
                     },
                     success: function() {
                         //document.getElementById("notice").innerHTML = "saved!";
-                        tempAlert("saved!", 700);
+                        parser = new DOMParser();
+                        parsed = parser.parseFromString(page_content, 'text/html');
+                        paragraphs = parsed.querySelectorAll('h1, h2, h3');
+                        //alert(paragraphs.length)
+                        //tempAlert("saved!", 700);
+
+                        if (paragraphs.length &gt; 1 || paragraphs.length == 0)
+                        {
+                            // when no title page will cause reload to error page
+                            //window.location.reload();
+                            document.location.href="/";
+                        }
+                        else
+                        {
+                            tempAlert("saved!", 700);
+                        }
                     }
                  }); 
         }
@@ -2438,7 +2450,21 @@ img.add_border {
                     },
                     success: function() {
                         //document.getElementById("notice").innerHTML = "saved!";
-                        tempAlert("saved!", 700);
+                        parser = new DOMParser();
+                        parsed = parser.parseFromString(page_content, 'text/html');
+                        paragraphs = parsed.querySelectorAll('h1, h2, h3');
+                        //alert(paragraphs.length)
+                        //tempAlert("saved!", 700);
+
+                        if (paragraphs.length &gt; 1 || paragraphs.length == 0 )
+                        {
+                            //window.location.reload();
+                            document.location.href="/";
+                        }
+                        else
+                        {
+                            tempAlert("saved!", 700);
+                        }
                     }
                  }); 
         }

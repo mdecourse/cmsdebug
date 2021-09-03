@@ -2,7 +2,7 @@
         <head>
         <title>CMSiMDE</title>
         <meta charset="utf-8">
-<meta property="head" content="H1">
+<meta property="head" content="H2">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link href="https://fonts.googleapis.com/css?family=Quicksand:300,400,500,700,900" rel="stylesheet">
         <link rel="stylesheet" href="./../cmsimde/static/chimper/fonts/icomoon/style.css">
@@ -128,7 +128,7 @@ img.add_border {
                             <li><a href="./../blog/index.html">blog</a></li>
                         </ul>
                       </li>
-                     <li><a href='About.html'>About</a><li><a href='操作注意.html'>操作注意</a><li class='has-children'><a href='Develop.html'>Develop</a><ul class='dropdown'><li class='has-children'><a href='加入圖檔.html'>加入圖檔</a><ul class='dropdown'><li><a href='測試 H3 頁面.html'>測試 H3 頁面</a></li></li></ul></ul><li><a href='AJAX.html'>AJAX</a></li>
+                     <li class='has-children'><a href='About.html'>About</a><ul class='dropdown'><li><a href='Count tags.html'>Count tags</a></li></ul><li><a href='未存擋警告.html'>未存擋警告</a><li><a href='reload.html'>reload</a><li class='has-children'><a href='Develop.html'>Develop</a><ul class='dropdown'><li><a href='加入圖檔.html'>加入圖檔</a></li></ul><li class='has-children'><a href='AJAX.html'>AJAX</a><ul class='dropdown'><li><a href='Final.html'>Final</a></li>
                       </ul>
                 </nav>
               </div>
@@ -139,9 +139,156 @@ img.add_border {
           </div>
           
         </header>
-    <div id="tipue_search_content">About << <a href='About.html'>Previous</a> <a href='Develop.html'>Next</a> >> Develop<br /><h1>操作注意</h1>
-<p>由於目前編輯存擋, 已經不會 refresh 頁面, 因此使用者必須自行切換至展示頁面功能, 才能見到各分頁內容.</p>
-<br />About << <a href='About.html'>Previous</a> <a href='Develop.html'>Next</a> >> Develop</div>
+    <div id="tipue_search_content">AJAX << <a href='AJAX.html'>Previous</a> <br /><h1>Final</h1>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
+    
+    """Tinymce editor scripts
+    """
+    
+    sitecontent =file_get_contents(config_dir + "content.htm")
+    editor = set_admin_css() + editorhead() + '''&lt;/head&gt;''' + editorfoot()
+    # edit all pages
+    if page_order is None:
+        outstring = editor + "&lt;div class='container'&gt;&lt;nav&gt;" + \
+                        menu_input + "&lt;/nav&gt;&lt;section&gt;&lt;form onsubmit='return save_all_data(this)'&gt; \
+                        &lt;textarea class='simply-editor' name='page_content' cols='50' rows='15'&gt;" +  \
+                        editor_content + "&lt;/textarea&gt;&lt;input type='button' onClick='save_all()' value='save'&gt;"
+        outstring +="""
+        &lt;script&gt;    
+        function tempAlert(msg,duration)
+            {
+             var el = document.createElement("div");
+             el.setAttribute("style","position:absolute;top:40%;left:20%;background-color:lightgreen;");
+             el.innerHTML = msg;
+             setTimeout(function(){
+              el.parentNode.removeChild(el);
+             },duration);
+             document.body.appendChild(el);
+            }
+        
+        function save_all(){
+            tinymce.activeEditor.execCommand('mceSave');
+        }
+        
+        function save_all_data(form) {
+                var page_content = $('textarea#page_content').val();
+                
+                $.ajax({
+                    type: "POST",
+                    url: "/savePage",
+                    data: {"page_content": page_content},
+                    error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        alert(XMLHttpRequest.status);
+                        alert(XMLHttpRequest.readyState);
+                        alert(textStatus);
+                    },
+                    success: function() {
+                        //document.getElementById("notice").innerHTML = "saved!";
+                        parser = new DOMParser();
+                        parsed = parser.parseFromString(page_content, 'text/html');
+                        paragraphs = parsed.querySelectorAll('h1, h2, h3');
+                        //alert(paragraphs.length)
+                        //tempAlert("saved!", 700);
+
+                        if (paragraphs.length &gt; 1 || paragraphs.length == 0)
+                        {
+                            // when no title page will cause reload to error page
+                            //window.location.reload();
+                            document.location.href="/";
+                        }
+                        else
+                        {
+                            tempAlert("saved!", 700);
+                        }
+                    }
+                 }); 
+        }
+        &lt;/script&gt;
+        """
+        outstring += "&lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;"
+    else:
+        # add viewpage button while single page editing
+        head, level, page = parse_content()
+        outstring = "&lt;p id='notice'&gt;&lt;/p&gt;"
+        outstring  += editor + "&lt;div class='container'&gt;&lt;nav&gt;" + \
+                        menu_input+"&lt;/nav&gt;&lt;section&gt;&lt;form onsubmit='return save_data(this)'&gt; \
+                        &lt;textarea class='simply-editor' id='page_content' name='page_content' cols='50' rows='15'&gt;" + \
+                        editor_content + "&lt;/textarea&gt;&lt;input type='hidden'  id='page_order' name='page_order' value='" + \
+                        str(page_order) + "'&gt;"
+        # add an extra collaborative save button
+        outstring += """&lt;input type="button" onClick="ssave()"  value="save"&gt;"""
+        outstring += """&lt;input type="button" onClick="cssave()"  value="csave"&gt;"""
+
+        outstring +="""
+        &lt;script&gt;    
+        
+        function tempAlert(msg,duration)
+            {
+             var el = document.createElement("div");
+             el.setAttribute("style","position:absolute;top:40%;left:20%;background-color:lightgreen;");
+             el.innerHTML = msg;
+             setTimeout(function(){
+              el.parentNode.removeChild(el);
+             },duration);
+             document.body.appendChild(el);
+            }
+            
+        // default action is "save"
+        var action ="save";
+        
+        function cssave(){
+            action = "csave";
+            tinymce.activeEditor.execCommand('mceSave');
+        }
+        
+        function ssave(){
+            action = "save";
+            tinymce.activeEditor.execCommand('mceSave');
+        }
+        
+        function save_data(form) {
+                var page_content = $('textarea#page_content').val();
+                var page_order = $('#page_order').val();
+                
+                $.ajax({
+                    type: "POST",
+                    url: "/ssavePage",
+                    data: {"page_content": page_content, "page_order": page_order, "action": action},
+                    error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        alert(XMLHttpRequest.status);
+                        alert(XMLHttpRequest.readyState);
+                        alert(textStatus);
+                    },
+                    success: function() {
+                        //document.getElementById("notice").innerHTML = "saved!";
+                        parser = new DOMParser();
+                        parsed = parser.parseFromString(page_content, 'text/html');
+                        paragraphs = parsed.querySelectorAll('h1, h2, h3');
+                        //alert(paragraphs.length)
+                        //tempAlert("saved!", 700);
+
+                        if (paragraphs.length &gt; 1 || paragraphs.length == 0 )
+                        {
+                            //window.location.reload();
+                            document.location.href="/";
+                        }
+                        else
+                        {
+                            tempAlert("saved!", 700);
+                        }
+                    }
+                 }); 
+        }
+        &lt;/script&gt;
+        """
+        outstring += '''&lt;input type=button onClick="location.href='/get_page/''' + \
+                    head[page_order] + \
+                    ''''" value='viewpage'&gt;&lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;'''
+    return outstring
+
+
+</pre>
+<p><br/><br/></p><br />AJAX << <a href='AJAX.html'>Previous</a> </div>
         
     <!-- footer -->
       <div class="container">

@@ -2,7 +2,7 @@
         <head>
         <title>CMSiMDE</title>
         <meta charset="utf-8">
-<meta property="head" content="H1">
+<meta property="head" content="H2">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link href="https://fonts.googleapis.com/css?family=Quicksand:300,400,500,700,900" rel="stylesheet">
         <link rel="stylesheet" href="./../cmsimde/static/chimper/fonts/icomoon/style.css">
@@ -139,160 +139,25 @@ img.add_border {
           </div>
           
         </header>
-    <div id="tipue_search_content">加入圖檔 << <a href='加入圖檔.html'>Previous</a> <a href='Final.html'>Next</a> >> Final<br /><h1>AJAX</h1>
-<p>總共有四個地方進行修改:</p>
-<p>savepage 與 ssavepage 要 comment 將 \n 換為空字串的程式碼.</p>
-<p>sh4tinymce 要讓程式碼二次編修能告知 editor, 修改函式如下:</p>
-<pre class="brush:js;auto-links:false;toolbar:false" contenteditable="false">function onSubmitFunction(e) {
-    var code = e.data.code;
-    code = code.replace(/\&lt;/g,"&lt;").replace(/\&gt;/g,"&gt;");
-    /* Convert settings into strings for classname */
-    var language	= e.data.language ? e.data.language : defaultLanguage;
-    var collapse	= e.data.collapse != shDefault.collapse ? ';collapse:' + e.data.collapse : '';
-    var autolinks	= e.data.autolinks != shDefault.autolinks ? ';auto-links:' + e.data.autolinks : '';
-    var gutter		= e.data.gutter != shDefault.gutter ? ';gutter:' + e.data.gutter : '';
-    var htmlscript	= e.data.htmlscript != shDefault.htmlscript ? ';html-script:' + e.data.htmlscript : '';
-    var toolbar		= e.data.toolbar != shDefault.toolbar ? ';toolbar:' + e.data.toolbar : '';
-    var firstline	= e.data.firstline != shDefault.firstline ? ';first-line:' + e.data.firstline : '';
-    var hlstart=e.data.highlight.indexOf(",")!=-1?"[":"",
-        hlend=e.data.highlight.indexOf(",")!=-1?"]":"";
-    var highlight	= e.data.highlight.replace(/ /g,"").replace(/\[/g,"").replace(/\]/g,"") != shDefault.highlight ? ';highlight:' + hlstart + e.data.highlight.replace(/ /g,"").replace(/\[/g,"").replace(/\]/g,"").replace(/,$/g,"") + hlend : '';
-    var tabsize		= e.data.tabsize != shDefault.tabsize ? ';tab-size:' + e.data.tabsize : '';
-    
-    // Create SH element with string settings
-    Elmt = editor.dom.create('pre',
-                {class: 'brush:' + language + collapse + autolinks + gutter + htmlscript + toolbar + firstline + highlight + tabsize,
-                 contenteditable: 'false'},
-                 code);
-    
-    if(selected)
-        editor.dom.replace(Elmt, selectionNode);
+    <div id="tipue_search_content">About << <a href='About.html'>Previous</a> <a href='未存擋警告.html'>Next</a> >> 未存擋警告<br /><h1>Count tags</h1>
+<pre class="brush:js;auto-links:false;toolbar:false" contenteditable="false">success: function() {
+    //document.getElementById("notice").innerHTML = "saved!";
+    parser = new DOMParser();
+    parsed = parser.parseFromString(page_content, 'text/html');
+    paragraphs = parsed.querySelectorAll('h1, h2, h3');
+    //alert(paragraphs.length)
+    //tempAlert("saved!", 700);
+
+    if (paragraphs.length &gt; 1)
+    {
+        window.location.reload();
+    }
     else
-        editor.insertContent(editor.dom.getOuterHTML(Elmt)+'&lt;br&gt;');
-    // KMOlab before get back to tinymce editor, set dirty
-    tinymce.activeEditor.setDirty(true);
+    {
+        tempAlert("saved!", 700);
+    }
 }</pre>
-<p>最後則是 tinymce_editor 函式的修改, 共有三種存檔模式: Edit_All, one page save and collaborative save.</p>
-<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
-    
-    """Tinymce editor scripts
-    """
-    
-    sitecontent =file_get_contents(config_dir + "content.htm")
-    editor = set_admin_css() + editorhead() + '''&lt;/head&gt;''' + editorfoot()
-    # edit all pages
-    if page_order is None:
-        outstring = editor + "&lt;div class='container'&gt;&lt;nav&gt;" + \
-                        menu_input + "&lt;/nav&gt;&lt;section&gt;&lt;form onsubmit='return save_all_data(this)'&gt; \
-                        &lt;textarea class='simply-editor' name='page_content' cols='50' rows='15'&gt;" +  \
-                        editor_content + "&lt;/textarea&gt;&lt;input type='button' onClick='save_all()' value='save'&gt;"
-        outstring +="""
-        &lt;script&gt;    
-        function tempAlert(msg,duration)
-            {
-             var el = document.createElement("div");
-             el.setAttribute("style","position:absolute;top:40%;left:20%;background-color:lightgreen;");
-             el.innerHTML = msg;
-             setTimeout(function(){
-              el.parentNode.removeChild(el);
-             },duration);
-             document.body.appendChild(el);
-            }
-        
-        function save_all(){
-            tinymce.activeEditor.execCommand('mceSave');
-        }
-        
-        function save_all_data(form) {
-                var page_content = $('textarea#page_content').val();
-                
-                $.ajax({
-                    type: "POST",
-                    url: "/savePage",
-                    data: {"page_content": page_content},
-                    error: function(XMLHttpRequest, textStatus, errorThrown) {
-                        alert(XMLHttpRequest.status);
-                        alert(XMLHttpRequest.readyState);
-                        alert(textStatus);
-                    },
-                    success: function() {
-                        //document.getElementById("notice").innerHTML = "saved!";
-                        tempAlert("saved!", 700);
-                    }
-                 }); 
-        }
-        &lt;/script&gt;
-        """
-        outstring += "&lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;"
-    else:
-        # add viewpage button while single page editing
-        head, level, page = parse_content()
-        outstring = "&lt;p id='notice'&gt;&lt;/p&gt;"
-        outstring  += editor + "&lt;div class='container'&gt;&lt;nav&gt;" + \
-                        menu_input+"&lt;/nav&gt;&lt;section&gt;&lt;form onsubmit='return save_data(this)'&gt; \
-                        &lt;textarea class='simply-editor' id='page_content' name='page_content' cols='50' rows='15'&gt;" + \
-                        editor_content + "&lt;/textarea&gt;&lt;input type='hidden'  id='page_order' name='page_order' value='" + \
-                        str(page_order) + "'&gt;"
-        # add an extra collaborative save button
-        outstring += """&lt;input type="button" onClick="ssave()"  value="save"&gt;"""
-        outstring += """&lt;input type="button" onClick="cssave()"  value="csave"&gt;"""
-
-        outstring +="""
-        &lt;script&gt;    
-        
-        function tempAlert(msg,duration)
-            {
-             var el = document.createElement("div");
-             el.setAttribute("style","position:absolute;top:40%;left:20%;background-color:lightgreen;");
-             el.innerHTML = msg;
-             setTimeout(function(){
-              el.parentNode.removeChild(el);
-             },duration);
-             document.body.appendChild(el);
-            }
-            
-        // default action is "save"
-        var action ="save"
-        
-        function cssave(){
-            action = "csave";
-            tinymce.activeEditor.execCommand('mceSave');
-        }
-        
-        function ssave(){
-            action = "save";
-            tinymce.activeEditor.execCommand('mceSave');
-        }
-        
-        function save_data(form) {
-                var page_content = $('textarea#page_content').val();
-                var page_order = $('#page_order').val();
-                
-                $.ajax({
-                    type: "POST",
-                    url: "/ssavePage",
-                    data: {"page_content": page_content, "page_order": page_order, "action": action},
-                    error: function(XMLHttpRequest, textStatus, errorThrown) {
-                        alert(XMLHttpRequest.status);
-                        alert(XMLHttpRequest.readyState);
-                        alert(textStatus);
-                    },
-                    success: function() {
-                        //document.getElementById("notice").innerHTML = "saved!";
-                        tempAlert("saved!", 700);
-                    }
-                 }); 
-        }
-        &lt;/script&gt;
-        """
-        outstring += '''&lt;input type=button onClick="location.href='/get_page/''' + \
-                    head[page_order] + \
-                    ''''" value='viewpage'&gt;&lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;'''
-    return outstring
-
-
-</pre>
-<br />加入圖檔 << <a href='加入圖檔.html'>Previous</a> <a href='Final.html'>Next</a> >> Final</div>
+<br />About << <a href='About.html'>Previous</a> <a href='未存擋警告.html'>Next</a> >> 未存擋警告</div>
         
     <!-- footer -->
       <div class="container">
