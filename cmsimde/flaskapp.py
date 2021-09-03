@@ -2505,8 +2505,10 @@ def ssavePage():
     with open(config_dir + "content.htm", "w", encoding="utf-8") as file:
         for index in range(len(head)):
             if index == int(page_order):
-                if action == "save":
-                    file.write(page_content)
+                # only allow saving, stop using csave
+                #if action == "save":
+                file.write(page_content)
+                """
                 else:
                     # make orig and new html content into list
                     newSoup = bs4.BeautifulSoup(page_content, "html.parser")
@@ -2519,6 +2521,7 @@ def ssavePage():
                     for i in range(len(mergedList)):
                         newContent += mergedList[i]
                     file.write(newContent)
+                """
             else:
                 file.write("<h"+str(level[index])+ ">" + str(head[index]) + "</h" + \
                               str(level[index])+">"+str(page[index]))
@@ -2739,7 +2742,7 @@ def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
             }
             
         // default action is "save"
-        var action ="save"
+        var action ="save";
         
         function cssave(){
             action = "csave";
