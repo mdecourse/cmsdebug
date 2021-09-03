@@ -87,6 +87,7 @@
 <v t="leo.20190515144238.24"><vh>ssavePage (flaskapp.py)</vh></v>
 <v t="leo.20190515144238.25"><vh>syntaxhighlight (flaskapp.py)</vh></v>
 <v t="leo.20190515144238.26"><vh>syntaxhighlight2 (flaskapp.py)</vh></v>
+<v t="yen.20210902223809.1"><vh>tinymce_editor_origin</vh></v>
 <v t="leo.20190515144238.27"><vh>tinymce_editor (flaskapp.py)</vh></v>
 <v t="leo.20190515144238.28"><vh>unique (flaskapp.py)</vh></v>
 <v t="leo.20201127112424.1"><vh>merge_sequence</vh></v>
@@ -404,10 +405,10 @@ tinymce.init({
     'advlist autolink lists link image charmap print preview hr anchor pagebreak',
     'searchreplace wordcount visualblocks visualchars code fullscreen',
     'insertdatetime media nonbreaking save table contextmenu directionality',
-    'emoticons template paste textcolor colorpicker textpattern imagetools sh4tinymce'
+    'emoticons template paste textcolor colorpicker textpattern imagetools sh4tinymce codesample'
   ],
   toolbar1: 'insertfile save undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
-  toolbar2: 'link image | print preview media | forecolor backcolor emoticons | code sh4tinymce',
+  toolbar2: 'link image | print preview media | forecolor backcolor emoticons | code sh4tinymce codesample',
   relative_urls: false,
   toolbar_items_size: 'small',
   file_picker_callback: function(callback, value, meta) {
@@ -2342,13 +2343,45 @@ img.add_border {
     else:
         # add viewpage button while single page editing
         head, level, page = parse_content()
-        outstring = editor + "&lt;div class='container'&gt;&lt;nav&gt;" + \
-                        menu_input+"&lt;/nav&gt;&lt;section&gt;&lt;form method='post' action='/ssavePage'&gt; \
-                        &lt;textarea class='simply-editor' name='page_content' cols='50' rows='15'&gt;" + \
-                        editor_content + "&lt;/textarea&gt;&lt;input type='hidden' name='page_order' value='" + \
+        outstring = "&lt;p id='notice'&gt;&lt;/p&gt;"
+        outstring  += editor + "&lt;div class='container'&gt;&lt;nav&gt;" + \
+                        menu_input+"&lt;/nav&gt;&lt;section&gt;&lt;form onsubmit='return save_data(this)'&gt; \
+                        &lt;textarea class='simply-editor' id='page_content' name='page_content' cols='50' rows='15'&gt;" + \
+                        editor_content + "&lt;/textarea&gt;&lt;input type='hidden'  id='page_order' name='page_order' value='" + \
                         str(page_order) + "'&gt;&lt;input type='submit' name='action' value='save'&gt;"
         # add an extra collaborative save button
         outstring += "&lt;input type='submit' name='action' value='csave'&gt;"
+        outstring +=""" &lt;input type="button" onClick="tinymce.activeEditor.execCommand('mceSave')" value="ajax"&gt;"""
+        outstring += """&lt;input type="button" onClick="isDirty()" value="dirty"&gt;"""
+        outstring +="""
+        &lt;script&gt;
+        if (tinymce.activeEditor.isDirty())
+            document.getElementById("notice").innerHTML = "";
+        
+        function isDirty(){
+            tinymce.activeEditor.setDirty(true);
+        }
+        
+function save_data(form) {
+            var page_content = $('#page_content').val();
+            var page_order = $('#page_order').val();
+            
+            $.ajax({
+                type: "POST",
+                url: "/ssavePage",
+                data: {"page_content": page_content, "page_order": page_order},
+                error: function(XMLHttpRequest, textStatus, errorThrown) {
+                alert(XMLHttpRequest.status);
+                alert(XMLHttpRequest.readyState);
+                alert(textStatus);
+                },
+                success: function() {
+                document.getElementById("notice").innerHTML = "saved!";
+                }
+             }); 
+}
+        &lt;/script&gt;
+        """
         outstring += '''&lt;input type=button onClick="location.href='/get_page/''' + \
                     head[page_order] + \
                     ''''" value='viewpage'&gt;&lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;'''
@@ -3358,5 +3391,34 @@ token = password_generator()</t>
 <t tx="yen.20210710222238.1">因為之前常有用戶在標題中放入特殊符號或 html 標註而無法順利完成分頁.
 
 本次 2021.07.10 要將用戶選用的標題中特殊符號予以移除</t>
+<t tx="yen.20210902223809.1">def tinymce_editor_origin(menu_input=None, editor_content=None, page_order=None):
+    
+    """Tinymce editor scripts
+    """
+    
+    sitecontent =file_get_contents(config_dir + "content.htm")
+    editor = set_admin_css() + editorhead() + '''&lt;/head&gt;''' + editorfoot()
+    # edit all pages
+    if page_order is None:
+        outstring = editor + "&lt;div class='container'&gt;&lt;nav&gt;" + \
+                        menu_input + "&lt;/nav&gt;&lt;section&gt;&lt;form method='post' action='savePage'&gt; \
+                        &lt;textarea class='simply-editor' name='page_content' cols='50' rows='15'&gt;" +  \
+                        editor_content + "&lt;/textarea&gt;&lt;input type='submit' value='save'&gt; \
+                        &lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;"
+    else:
+        # add viewpage button while single page editing
+        head, level, page = parse_content()
+        outstring = editor + "&lt;div class='container'&gt;&lt;nav&gt;" + \
+                        menu_input+"&lt;/nav&gt;&lt;section&gt;&lt;form method='post' action='/ssavePage'&gt; \
+                        &lt;textarea class='simply-editor' name='page_content' cols='50' rows='15'&gt;" + \
+                        editor_content + "&lt;/textarea&gt;&lt;input type='hidden' name='page_order' value='" + \
+                        str(page_order) + "'&gt;&lt;input type='submit' name='action' value='save'&gt;"
+        # add an extra collaborative save button
+        outstring += "&lt;input type='submit' name='action' value='csave'&gt;"
+        outstring += '''&lt;input type=button onClick="location.href='/get_page/''' + \
+                    head[page_order] + \
+                    ''''" value='viewpage'&gt;&lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;'''
+    return outstring
+</t>
 </tnodes>
 </leo_file>

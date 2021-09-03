@@ -518,10 +518,10 @@ tinymce.init({
     'advlist autolink lists link image charmap print preview hr anchor pagebreak',
     'searchreplace wordcount visualblocks visualchars code fullscreen',
     'insertdatetime media nonbreaking save table contextmenu directionality',
-    'emoticons template paste textcolor colorpicker textpattern imagetools sh4tinymce'
+    'emoticons template paste textcolor colorpicker textpattern imagetools sh4tinymce codesample'
   ],
   toolbar1: 'insertfile save undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
-  toolbar2: 'link image | print preview media | forecolor backcolor emoticons | code sh4tinymce',
+  toolbar2: 'link image | print preview media | forecolor backcolor emoticons | code sh4tinymce codesample',
   relative_urls: false,
   toolbar_items_size: 'small',
   file_picker_callback: function(callback, value, meta) {
@@ -2629,7 +2629,7 @@ img.add_border {
 '''
 
 
-def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
+def tinymce_editor_origin(menu_input=None, editor_content=None, page_order=None):
     
     """Tinymce editor scripts
     """
@@ -2653,6 +2653,66 @@ def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
                         str(page_order) + "'><input type='submit' name='action' value='save'>"
         # add an extra collaborative save button
         outstring += "<input type='submit' name='action' value='csave'>"
+        outstring += '''<input type=button onClick="location.href='/get_page/''' + \
+                    head[page_order] + \
+                    ''''" value='viewpage'></form></section></body></html>'''
+    return outstring
+def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
+    
+    """Tinymce editor scripts
+    """
+    
+    sitecontent =file_get_contents(config_dir + "content.htm")
+    editor = set_admin_css() + editorhead() + '''</head>''' + editorfoot()
+    # edit all pages
+    if page_order is None:
+        outstring = editor + "<div class='container'><nav>" + \
+                        menu_input + "</nav><section><form method='post' action='savePage'> \
+                        <textarea class='simply-editor' name='page_content' cols='50' rows='15'>" +  \
+                        editor_content + "</textarea><input type='submit' value='save'> \
+                        </form></section></body></html>"
+    else:
+        # add viewpage button while single page editing
+        head, level, page = parse_content()
+        outstring = "<p id='notice'></p>"
+        outstring  += editor + "<div class='container'><nav>" + \
+                        menu_input+"</nav><section><form onsubmit='return save_data(this)'> \
+                        <textarea class='simply-editor' id='page_content' name='page_content' cols='50' rows='15'>" + \
+                        editor_content + "</textarea><input type='hidden'  id='page_order' name='page_order' value='" + \
+                        str(page_order) + "'><input type='submit' name='action' value='save'>"
+        # add an extra collaborative save button
+        outstring += "<input type='submit' name='action' value='csave'>"
+        outstring +=""" <input type="button" onClick="tinymce.activeEditor.execCommand('mceSave')" value="ajax">"""
+        outstring += """<input type="button" onClick="isDirty()" value="dirty">"""
+        outstring +="""
+        <script>
+        if (tinymce.activeEditor.isDirty())
+            document.getElementById("notice").innerHTML = "";
+        
+        function isDirty(){
+            tinymce.activeEditor.setDirty(true);
+        }
+        
+function save_data(form) {
+            var page_content = $('#page_content').val();
+            var page_order = $('#page_order').val();
+            
+            $.ajax({
+                type: "POST",
+                url: "/ssavePage",
+                data: {"page_content": page_content, "page_order": page_order},
+                error: function(XMLHttpRequest, textStatus, errorThrown) {
+                alert(XMLHttpRequest.status);
+                alert(XMLHttpRequest.readyState);
+                alert(textStatus);
+                },
+                success: function() {
+                document.getElementById("notice").innerHTML = "saved!";
+                }
+             }); 
+}
+        </script>
+        """
         outstring += '''<input type=button onClick="location.href='/get_page/''' + \
                     head[page_order] + \
                     ''''" value='viewpage'></form></section></body></html>'''
