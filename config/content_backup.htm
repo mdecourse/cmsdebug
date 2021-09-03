@@ -1,15 +1,13 @@
 <h1>About</h1>
-<p>test</p>
-<p>目前對於 code sample 無法 triger editor isDirty</p>
-<p>而且 ajax 按鈕無法儲存檔案, 必須透過 save plugin</p>
-<p>此內容管理系統以 <a href="https://github.com/mdecourse/cmsimde">https://github.com/mdecourse/cmsimde</a> 作為 submodule 運作, 可以選定對應的版本運作, cmsimde 可以持續改版, 不會影響之前設為 submodule, 使用舊版 cmsimde 模組的內容管理相關運作.</p>
-<h4>利用 cmsimde 建立靜態網誌方法:</h4>
-<p>1. 在 github 建立倉儲, git clone 到近端</p>
-<p>2. 參考 <a href="https://github.com/mdecourse/newcms">https://github.com/mdecourse/newcms</a>, 加入除了 cmsimde 目錄外的所有內容</p>
-<p>以 git submodule add <a href="https://github.com/mdecourse/cmsimde">https://github.com/mdecourse/cmsimde</a> cmsimde</p>
-<p>建立 cmsimde 目錄, 並從 github 取下子模組內容.</p>
-<p>3.在近端維護時, 更換目錄到倉儲中的 cmsimde, 以 python wsgi.py 啟動近端網際伺服器.</p>
-<p>動態內容編輯完成後, 以 generate_pages 轉為靜態內容, 以 git add commit 及 push 將內容推到遠端.</p>
-<p>4. 之後若要以 git clone 取下包含 submodule 的所有內容, 執行:</p>
-<p>git clone --recurse-submodules <a href="https://github.com/mdecourse/newcms.git">https://github.com/mdecourse/newcms.git</a></p>
-<h1>Develop</h1><p>不髒不行</p><p>把它弄髒</p><pre class="brush:js;auto-links:false;toolbar:false" contenteditable="false">可以看看有多髒</pre><p>只是現在有個問題, 就是 insert code 編輯不會讓 editor dirty</p><p>這樣就會更加 dirty</p><p>dirty 的是什麼</p><p><a href="https://github.com/mdecourse/cmsimde">https://github.com/mdecourse/cmsimde</a> 的開發, 可以在一個目錄中放入 cmsimde, 然後將 up_dir 中的內容放到與 cmsimde 目錄同位階的地方, 使用 command 進入 cmsimde 目錄, 執行 python wsgi.py, 就可以啟動, 以瀏覽器 https://localhost:9443 就可以連接, 以 admin 作為管理者密碼, 就可以登入維護內容.</p><p>cmsimde 的開發採用 Leo Editor, 開啟 cmsimde 目錄中的 cmsimde.leo 就可以進行程式修改, 結束後, 若要保留網際內容, 只要將 cmsimde 外部的內容倒回 up_dir 目錄中即可後續對 cmsimde 遠端倉儲進行改版.</p><p>init.py 位於  up_dir 目錄, 可以設定 site_title 與 uwsgi 等變數.</p><h1>第三頁</h1><p>看看是否正常 </p><pre class="brush:js;auto-links:false;toolbar:false" contenteditable="false">testtesttesttest</pre><p>test</p><p>test</p><p>test</p><p>沒有問題</p><p></p>
+<p>倉儲: <a href="https://github.com/mdecourse/cmsdebug">https://github.com/mdecourse/cmsdebug</a> </p>
+<p>網頁: <a href="https://mde.tw/cmsdebug">https://mde.tw/cmsdebug</a></p>
+<p>目的: 用於測試 <a href="https://github.com/mdecourse/cmsimde">CMSiMDE</a> 新功能, 並進行相關除錯與測試流程.</p><h1>Develop</h1>
+<p>2021 Fall 的 <a href="https://github.com/mdecourse/cmsimde">CMSiMDE</a> 改版, 主要是將 Edit All 與 Edit 的編輯存檔改為 AJAX.</p><h1>第三頁</h1>
+<p>345再試一次</p>
+<p>編輯全部 3</p>
+<p>原來是 csave 作怪</p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">for i in range(8):    
+    print("test")
+#  於是開始修改
+# 也許沒有什麼問題</pre>
+<p></p>

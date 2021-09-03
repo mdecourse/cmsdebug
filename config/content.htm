@@ -1,15 +1,158 @@
 <h1>About</h1>
-<p>test</p>
-<p>目前對於 code sample 無法 triger editor isDirty</p>
-<p>而且 ajax 按鈕無法儲存檔案, 必須透過 save plugin</p>
-<p>此內容管理系統以 <a href="https://github.com/mdecourse/cmsimde">https://github.com/mdecourse/cmsimde</a> 作為 submodule 運作, 可以選定對應的版本運作, cmsimde 可以持續改版, 不會影響之前設為 submodule, 使用舊版 cmsimde 模組的內容管理相關運作.</p>
-<h4>利用 cmsimde 建立靜態網誌方法:</h4>
-<p>1. 在 github 建立倉儲, git clone 到近端</p>
-<p>2. 參考 <a href="https://github.com/mdecourse/newcms">https://github.com/mdecourse/newcms</a>, 加入除了 cmsimde 目錄外的所有內容</p>
-<p>以 git submodule add <a href="https://github.com/mdecourse/cmsimde">https://github.com/mdecourse/cmsimde</a> cmsimde</p>
-<p>建立 cmsimde 目錄, 並從 github 取下子模組內容.</p>
-<p>3.在近端維護時, 更換目錄到倉儲中的 cmsimde, 以 python wsgi.py 啟動近端網際伺服器.</p>
-<p>動態內容編輯完成後, 以 generate_pages 轉為靜態內容, 以 git add commit 及 push 將內容推到遠端.</p>
-<p>4. 之後若要以 git clone 取下包含 submodule 的所有內容, 執行:</p>
-<p>git clone --recurse-submodules <a href="https://github.com/mdecourse/newcms.git">https://github.com/mdecourse/newcms.git</a></p>
-<h1>Develop</h1><p>不髒不行</p><p>把它弄髒</p><pre class="brush:js;auto-links:false;toolbar:false" contenteditable="false">可以看看有多髒</pre><p>只是現在有個問題, 就是 insert code 編輯不會讓 editor dirty</p><p>這樣就會更加 dirty</p><p>dirty 的是什麼</p><p><a href="https://github.com/mdecourse/cmsimde">https://github.com/mdecourse/cmsimde</a> 的開發, 可以在一個目錄中放入 cmsimde, 然後將 up_dir 中的內容放到與 cmsimde 目錄同位階的地方, 使用 command 進入 cmsimde 目錄, 執行 python wsgi.py, 就可以啟動, 以瀏覽器 https://localhost:9443 就可以連接, 以 admin 作為管理者密碼, 就可以登入維護內容.</p><p>cmsimde 的開發採用 Leo Editor, 開啟 cmsimde 目錄中的 cmsimde.leo 就可以進行程式修改, 結束後, 若要保留網際內容, 只要將 cmsimde 外部的內容倒回 up_dir 目錄中即可後續對 cmsimde 遠端倉儲進行改版.</p><p>init.py 位於  up_dir 目錄, 可以設定 site_title 與 uwsgi 等變數.</p><pre class="language-python"><code>for i in range(5):    print("good")</code></pre><h1>第三頁</h1><p>看看是否正常</p><pre class="brush:js;auto-links:false;toolbar:false" contenteditable="false">testtesttesttest</pre><p>test</p><p>test</p><p>test</p><p>沒有問題</p><p></p>
+<p>倉儲: <a href="https://github.com/mdecourse/cmsdebug">https://github.com/mdecourse/cmsdebug</a> </p>
+<p>網頁: <a href="https://mde.tw/cmsdebug">https://mde.tw/cmsdebug</a></p>
+<p>目的: 用於測試 <a href="https://github.com/mdecourse/cmsimde">CMSiMDE</a> 新功能, 並進行相關除錯與測試流程.</p><h1>Develop</h1>
+<p>2021 Fall 的 <a href="https://github.com/mdecourse/cmsimde">CMSiMDE</a> 改版, 主要是將 Edit All 與 Edit 的編輯存檔改為 AJAX.</p><h1>AJAX</h1>
+<p>總共有四個地方進行修改:</p>
+<p>savepage 與 ssavepage 要 comment 將 \n 換為空字串的程式碼.</p>
+<p>sh4tinymce 要讓程式碼二次編修能告知 editor, 修改函式如下:</p>
+<pre class="brush:js;auto-links:false;toolbar:false" contenteditable="false">function onSubmitFunction(e) {
+    var code = e.data.code;
+    code = code.replace(/\&lt;/g,"&lt;").replace(/\&gt;/g,"&gt;");
+    /* Convert settings into strings for classname */
+    var language	= e.data.language ? e.data.language : defaultLanguage;
+    var collapse	= e.data.collapse != shDefault.collapse ? ';collapse:' + e.data.collapse : '';
+    var autolinks	= e.data.autolinks != shDefault.autolinks ? ';auto-links:' + e.data.autolinks : '';
+    var gutter		= e.data.gutter != shDefault.gutter ? ';gutter:' + e.data.gutter : '';
+    var htmlscript	= e.data.htmlscript != shDefault.htmlscript ? ';html-script:' + e.data.htmlscript : '';
+    var toolbar		= e.data.toolbar != shDefault.toolbar ? ';toolbar:' + e.data.toolbar : '';
+    var firstline	= e.data.firstline != shDefault.firstline ? ';first-line:' + e.data.firstline : '';
+    var hlstart=e.data.highlight.indexOf(",")!=-1?"[":"",
+        hlend=e.data.highlight.indexOf(",")!=-1?"]":"";
+    var highlight	= e.data.highlight.replace(/ /g,"").replace(/\[/g,"").replace(/\]/g,"") != shDefault.highlight ? ';highlight:' + hlstart + e.data.highlight.replace(/ /g,"").replace(/\[/g,"").replace(/\]/g,"").replace(/,$/g,"") + hlend : '';
+    var tabsize		= e.data.tabsize != shDefault.tabsize ? ';tab-size:' + e.data.tabsize : '';
+    
+    // Create SH element with string settings
+    Elmt = editor.dom.create('pre',
+                {class: 'brush:' + language + collapse + autolinks + gutter + htmlscript + toolbar + firstline + highlight + tabsize,
+                 contenteditable: 'false'},
+                 code);
+    
+    if(selected)
+        editor.dom.replace(Elmt, selectionNode);
+    else
+        editor.insertContent(editor.dom.getOuterHTML(Elmt)+'&lt;br&gt;');
+    // KMOlab before get back to tinymce editor, set dirty
+    tinymce.activeEditor.setDirty(true);
+}</pre>
+<p>最後則是 tinymce_editor 函式的修改, 共有三種存檔模式: Edit_All, one page save and collaborative save.</p>
+<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
+    
+    """Tinymce editor scripts
+    """
+    
+    sitecontent =file_get_contents(config_dir + "content.htm")
+    editor = set_admin_css() + editorhead() + '''&lt;/head&gt;''' + editorfoot()
+    # edit all pages
+    if page_order is None:
+        outstring = editor + "&lt;div class='container'&gt;&lt;nav&gt;" + \
+                        menu_input + "&lt;/nav&gt;&lt;section&gt;&lt;form onsubmit='return save_all_data(this)'&gt; \
+                        &lt;textarea class='simply-editor' name='page_content' cols='50' rows='15'&gt;" +  \
+                        editor_content + "&lt;/textarea&gt;&lt;input type='button' onClick='save_all()' value='save'&gt;"
+        outstring +="""
+        &lt;script&gt;    
+        function tempAlert(msg,duration)
+            {
+             var el = document.createElement("div");
+             el.setAttribute("style","position:absolute;top:40%;left:20%;background-color:lightgreen;");
+             el.innerHTML = msg;
+             setTimeout(function(){
+              el.parentNode.removeChild(el);
+             },duration);
+             document.body.appendChild(el);
+            }
+        
+        function save_all(){
+            tinymce.activeEditor.execCommand('mceSave');
+        }
+        
+        function save_all_data(form) {
+                var page_content = $('textarea#page_content').val();
+                
+                $.ajax({
+                    type: "POST",
+                    url: "/savePage",
+                    data: {"page_content": page_content},
+                    error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        alert(XMLHttpRequest.status);
+                        alert(XMLHttpRequest.readyState);
+                        alert(textStatus);
+                    },
+                    success: function() {
+                        //document.getElementById("notice").innerHTML = "saved!";
+                        tempAlert("saved!", 700);
+                    }
+                 }); 
+        }
+        &lt;/script&gt;
+        """
+        outstring += "&lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;"
+    else:
+        # add viewpage button while single page editing
+        head, level, page = parse_content()
+        outstring = "&lt;p id='notice'&gt;&lt;/p&gt;"
+        outstring  += editor + "&lt;div class='container'&gt;&lt;nav&gt;" + \
+                        menu_input+"&lt;/nav&gt;&lt;section&gt;&lt;form onsubmit='return save_data(this)'&gt; \
+                        &lt;textarea class='simply-editor' id='page_content' name='page_content' cols='50' rows='15'&gt;" + \
+                        editor_content + "&lt;/textarea&gt;&lt;input type='hidden'  id='page_order' name='page_order' value='" + \
+                        str(page_order) + "'&gt;"
+        # add an extra collaborative save button
+        outstring += """&lt;input type="button" onClick="ssave()"  value="save"&gt;"""
+        outstring += """&lt;input type="button" onClick="cssave()"  value="csave"&gt;"""
+
+        outstring +="""
+        &lt;script&gt;    
+        
+        function tempAlert(msg,duration)
+            {
+             var el = document.createElement("div");
+             el.setAttribute("style","position:absolute;top:40%;left:20%;background-color:lightgreen;");
+             el.innerHTML = msg;
+             setTimeout(function(){
+              el.parentNode.removeChild(el);
+             },duration);
+             document.body.appendChild(el);
+            }
+            
+        // default action is "save"
+        var action ="save"
+        
+        function cssave(){
+            action = "csave";
+            tinymce.activeEditor.execCommand('mceSave');
+        }
+        
+        function ssave(){
+            action = "save";
+            tinymce.activeEditor.execCommand('mceSave');
+        }
+        
+        function save_data(form) {
+                var page_content = $('textarea#page_content').val();
+                var page_order = $('#page_order').val();
+                
+                $.ajax({
+                    type: "POST",
+                    url: "/ssavePage",
+                    data: {"page_content": page_content, "page_order": page_order, "action": action},
+                    error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        alert(XMLHttpRequest.status);
+                        alert(XMLHttpRequest.readyState);
+                        alert(textStatus);
+                    },
+                    success: function() {
+                        //document.getElementById("notice").innerHTML = "saved!";
+                        tempAlert("saved!", 700);
+                    }
+                 }); 
+        }
+        &lt;/script&gt;
+        """
+        outstring += '''&lt;input type=button onClick="location.href='/get_page/''' + \
+                    head[page_order] + \
+                    ''''" value='viewpage'&gt;&lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;'''
+    return outstring
+
+
+</pre>
+<p></p>
