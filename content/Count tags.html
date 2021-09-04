@@ -1,6 +1,6 @@
 <!DOCTYPE html><html>
         <head>
-        <title>CMSiMDE</title>
+        <title>CMSDEBUG</title>
         <meta charset="utf-8">
 <meta property="head" content="H2">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -128,7 +128,7 @@ img.add_border {
                             <li><a href="./../blog/index.html">blog</a></li>
                         </ul>
                       </li>
-                     <li class='has-children'><a href='About.html'>About</a><ul class='dropdown'><li><a href='Count tags.html'>Count tags</a></li></ul><li><a href='未存擋警告.html'>未存擋警告</a><li><a href='reload.html'>reload</a><li class='has-children'><a href='Develop.html'>Develop</a><ul class='dropdown'><li><a href='加入圖檔.html'>加入圖檔</a></li></ul><li class='has-children'><a href='AJAX.html'>AJAX</a><ul class='dropdown'><li><a href='Final.html'>Final</a></li>
+                     <li class='has-children'><a href='About.html'>About</a><ul class='dropdown'><li><a href='Count tags.html'>Count tags</a><li><a href='未存檔警告.html'>未存檔警告</a><li><a href='reload.html'>reload</a></li></ul><li><a href='Develop.html'>Develop</a><li><a href='AJAX.html'>AJAX</a></li>
                       </ul>
                 </nav>
               </div>
@@ -139,7 +139,8 @@ img.add_border {
           </div>
           
         </header>
-    <div id="tipue_search_content">About << <a href='About.html'>Previous</a> <a href='未存擋警告.html'>Next</a> >> 未存擋警告<br /><h1>Count tags</h1>
+    <div id="tipue_search_content">About << <a href='About.html'>Previous</a> <a href='未存檔警告.html'>Next</a> >> 未存檔警告<br /><h1>Count tags</h1>
+<p>利用 Javascript 檢查 editor 編輯區內的超文件內容, 假如內容有一個以上的 h1, h2, h3 標註, 或者該頁面內容的 h1, h2, h3 標註已經全數被刪除, 則 editor 存檔案後, 必須重新回到根目錄 (因為該頁面的編輯區標題可能已經被刪除, 若嘗試回到原頁面編輯區, 將會出現找不到頁面的錯誤, 所以決定重新回到根目錄).</p>
 <pre class="brush:js;auto-links:false;toolbar:false" contenteditable="false">success: function() {
     //document.getElementById("notice").innerHTML = "saved!";
     parser = new DOMParser();
@@ -148,16 +149,16 @@ img.add_border {
     //alert(paragraphs.length)
     //tempAlert("saved!", 700);
 
-    if (paragraphs.length &gt; 1)
+    if (paragraphs.length &gt; 1 || paragraphs.length == 0 )
     {
-        window.location.reload();
+        //window.location.reload();
+        document.location.href="/";
     }
     else
     {
         tempAlert("saved!", 700);
     }
-}</pre>
-<br />About << <a href='About.html'>Previous</a> <a href='未存擋警告.html'>Next</a> >> 未存擋警告</div>
+}</pre><br />About << <a href='About.html'>Previous</a> <a href='未存檔警告.html'>Next</a> >> 未存檔警告</div>
         
     <!-- footer -->
       <div class="container">

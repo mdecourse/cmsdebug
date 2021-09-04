@@ -1,6 +1,6 @@
 <!DOCTYPE html><html>
         <head>
-        <title>CMSiMDE</title>
+        <title>CMSDEBUG</title>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <link href="https://fonts.googleapis.com/css?family=Quicksand:300,400,500,700,900" rel="stylesheet">
@@ -127,7 +127,7 @@ img.add_border {
                             <li><a href="./../blog/index.html">blog</a></li>
                         </ul>
                       </li>
-                     <li class='has-children'><a href='About.html'>About</a><ul class='dropdown'><li><a href='Count tags.html'>Count tags</a></li></ul><li><a href='未存擋警告.html'>未存擋警告</a><li><a href='reload.html'>reload</a><li class='has-children'><a href='Develop.html'>Develop</a><ul class='dropdown'><li><a href='加入圖檔.html'>加入圖檔</a></li></ul><li class='has-children'><a href='AJAX.html'>AJAX</a><ul class='dropdown'><li><a href='Final.html'>Final</a></li>
+                     <li class='has-children'><a href='About.html'>About</a><ul class='dropdown'><li><a href='Count tags.html'>Count tags</a><li><a href='未存檔警告.html'>未存檔警告</a><li><a href='reload.html'>reload</a></li></ul><li><a href='Develop.html'>Develop</a><li><a href='AJAX.html'>AJAX</a></li>
                       </ul>
                 </nav>
               </div>
@@ -142,16 +142,7 @@ img.add_border {
 <p>倉儲: <a href="https://github.com/mdecourse/cmsdebug">https://github.com/mdecourse/cmsdebug</a></p>
 <p>網頁: <a href="https://mde.tw/cmsdebug">https://mde.tw/cmsdebug</a></p>
 <p>目的: 用於測試 <a href="https://github.com/mdecourse/cmsimde">CMSiMDE</a> 新功能, 並進行相關除錯與測試流程.</p>
-<p>若要使用 AJAX 存擋, 則當 editor 頁面中出現多個標題 H1, H2, H3 則系統存擋後, 必須強迫 reload 分頁???</p>
-<p>意即 Edit All 存擋後, 一定會 reload 然後分頁.</p>
-<p>編輯單頁, 且內容沒有其他 H1, H2, H3 標註, 則不需要 reload 分頁</p>
-<p>但是若編輯單頁內容出現多個標題標註, 則需要強迫 reload 分頁</p>
-<p>參考資料:</p>
-<p style="padding-left: 30px;"><a href="https://stackoverflow.com/questions/46822068/how-to-reload-flask-based-webpage-after-form-submission">https://stackoverflow.com/questions/46822068/how-to-reload-flask-based-webpage-after-form-submission</a></p>
-<p style="padding-left: 30px;">window.location.reload()</p>
-<p style="padding-left: 30px;"><a href="https://www.w3schools.com/jsref/met_loc_reload.asp">https://www.w3schools.com/jsref/met_loc_reload.asp</a></p>
-<p style="padding-left: 30px;"><a href="https://stackoverflow.com/questions/4324653/how-to-refresh-tinymce-iframe">https://stackoverflow.com/questions/4324653/how-to-refresh-tinymce-iframe</a></p>
-<p style="padding-left: 30px;">tinyMCE.execCommand("mceRepaint");</p><br /> <a href='Count tags.html'>Next</a> >> Count tags</div>
+<p>2021 Fall 的修改: 將 TinyMCE 4 的編輯存檔, 改為 AJAX.</p><br /> <a href='Count tags.html'>Next</a> >> Count tags</div>
         
     <!-- footer -->
       <div class="container">

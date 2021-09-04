@@ -1,6 +1,6 @@
 <!DOCTYPE html><html>
         <head>
-        <title>CMSiMDE</title>
+        <title>CMSDEBUG</title>
         <meta charset="utf-8">
 <meta property="head" content="H2">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -128,7 +128,7 @@ img.add_border {
                             <li><a href="./../blog/index.html">blog</a></li>
                         </ul>
                       </li>
-                     <li class='has-children'><a href='About.html'>About</a><ul class='dropdown'><li><a href='Count tags.html'>Count tags</a></li></ul><li><a href='未存擋警告.html'>未存擋警告</a><li><a href='reload.html'>reload</a><li class='has-children'><a href='Develop.html'>Develop</a><ul class='dropdown'><li><a href='加入圖檔.html'>加入圖檔</a></li></ul><li class='has-children'><a href='AJAX.html'>AJAX</a><ul class='dropdown'><li><a href='Final.html'>Final</a></li>
+                     <li class='has-children'><a href='About.html'>About</a><ul class='dropdown'><li><a href='Count tags.html'>Count tags</a><li><a href='未存檔警告.html'>未存檔警告</a><li><a href='reload.html'>reload</a></li></ul><li><a href='Develop.html'>Develop</a><li><a href='AJAX.html'>AJAX</a></li>
                       </ul>
                 </nav>
               </div>
@@ -139,11 +139,22 @@ img.add_border {
           </div>
           
         </header>
-    <div id="tipue_search_content">Develop << <a href='Develop.html'>Previous</a> <a href='AJAX.html'>Next</a> >> AJAX<br /><h1>加入圖檔</h1>
-<p>因為在 AJAX 模式下, 對頁面存檔不會 refresh, 若使用者新增 h1, h2, h3 等三種頁面內容, 必須自行轉至 view page 後, 頁面才會進行分頁.</p>
-<p><img caption="false" height="264" src="./../images/3yrs_camel.jpg" width="300"/></p>
-<p><img alt="" height="100" src="./../images/bunny.png" width="71"/></p>
-<br />Develop << <a href='Develop.html'>Previous</a> <a href='AJAX.html'>Next</a> >> AJAX</div>
+    <div id="tipue_search_content">Count tags << <a href='Count tags.html'>Previous</a> <a href='reload.html'>Next</a> >> reload<br /><h1>未存檔警告</h1>
+<p>修改單頁的標題屬性, 沒有 reload 頁面, 會不會造成問題?</p>
+<p>接下來納入 editor 未存檔時離開警告.</p>
+<p>參考: <a href="https://stackoverflow.com/questions/44890585/how-to-trigger-page-leave-warning-on-tinymce-edit">https://stackoverflow.com/questions/44890585/how-to-trigger-page-leave-warning-on-tinymce-edit</a></p>
+<pre class="brush:js;auto-links:false;toolbar:false" contenteditable="false">// leave  warning when modification not saved
+window.addEventListener('beforeunload', function(e) {
+var myPageIsDirty = tinymce.activeEditor.isDirty()
+if(myPageIsDirty) {
+    //following two lines will cause the browser to ask the user if they
+    //want to leave. The text of this dialog is controlled by the browser.
+    e.preventDefault(); //per the standard
+    e.returnValue = ''; //required for Chrome
+}
+//else: user is allowed to leave without a warning dialog
+});</pre>
+<p></p><br />Count tags << <a href='Count tags.html'>Previous</a> <a href='reload.html'>Next</a> >> reload</div>
         
     <!-- footer -->
       <div class="container">

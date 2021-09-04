@@ -2,16 +2,8 @@
 <p>倉儲: <a href="https://github.com/mdecourse/cmsdebug">https://github.com/mdecourse/cmsdebug</a></p>
 <p>網頁: <a href="https://mde.tw/cmsdebug">https://mde.tw/cmsdebug</a></p>
 <p>目的: 用於測試 <a href="https://github.com/mdecourse/cmsimde">CMSiMDE</a> 新功能, 並進行相關除錯與測試流程.</p>
-<p>若要使用 AJAX 存擋, 則當 editor 頁面中出現多個標題 H1, H2, H3 則系統存擋後, 必須強迫 reload 分頁???</p>
-<p>意即 Edit All 存擋後, 一定會 reload 然後分頁.</p>
-<p>編輯單頁, 且內容沒有其他 H1, H2, H3 標註, 則不需要 reload 分頁</p>
-<p>但是若編輯單頁內容出現多個標題標註, 則需要強迫 reload 分頁</p>
-<p>參考資料:</p>
-<p style="padding-left: 30px;"><a href="https://stackoverflow.com/questions/46822068/how-to-reload-flask-based-webpage-after-form-submission">https://stackoverflow.com/questions/46822068/how-to-reload-flask-based-webpage-after-form-submission</a></p>
-<p style="padding-left: 30px;">window.location.reload()</p>
-<p style="padding-left: 30px;"><a href="https://www.w3schools.com/jsref/met_loc_reload.asp">https://www.w3schools.com/jsref/met_loc_reload.asp</a></p>
-<p style="padding-left: 30px;"><a href="https://stackoverflow.com/questions/4324653/how-to-refresh-tinymce-iframe">https://stackoverflow.com/questions/4324653/how-to-refresh-tinymce-iframe</a></p>
-<p style="padding-left: 30px;">tinyMCE.execCommand("mceRepaint");</p><h2>Count tags</h2>
+<p>2021 Fall 的修改: 將 TinyMCE 4 的編輯存檔, 改為 AJAX.</p><h2>Count tags</h2>
+<p>利用 Javascript 檢查 editor 編輯區內的超文件內容, 假如內容有一個以上的 h1, h2, h3 標註, 或者該頁面內容的 h1, h2, h3 標註已經全數被刪除, 則 editor 存檔案後, 必須重新回到根目錄 (因為該頁面的編輯區標題可能已經被刪除, 若嘗試回到原頁面編輯區, 將會出現找不到頁面的錯誤, 所以決定重新回到根目錄).</p>
 <pre class="brush:js;auto-links:false;toolbar:false" contenteditable="false">success: function() {
     //document.getElementById("notice").innerHTML = "saved!";
     parser = new DOMParser();
@@ -20,27 +12,35 @@
     //alert(paragraphs.length)
     //tempAlert("saved!", 700);
 
-    if (paragraphs.length &gt; 1)
+    if (paragraphs.length &gt; 1 || paragraphs.length == 0 )
     {
-        window.location.reload();
+        //window.location.reload();
+        document.location.href="/";
     }
     else
     {
         tempAlert("saved!", 700);
     }
-}</pre>
-<h1>未存擋警告</h1>
-<p>接下來可能要設法納入 editor 未存擋時離開警告.</p>
-<h1>reload</h1>
-<p>當使用者編輯特定頁面時, 若該頁面有多個 h1, h2, h3 標註, 存擋時, 系統將會 reload, 以便完成分頁.</p>
-<p>或者當使用者刪除 editor 中的 h1, h2, 或 h3 內容, 導致完全沒有分頁標題時, 系統也必須 reload 進行分頁.</p>
-<p></p>
-<p>test</p><h1>Develop</h1>
+}</pre><h2>未存檔警告</h2>
+<p>修改單頁的標題屬性, 沒有 reload 頁面, 會不會造成問題?</p>
+<p>接下來納入 editor 未存檔時離開警告.</p>
+<p>參考: <a href="https://stackoverflow.com/questions/44890585/how-to-trigger-page-leave-warning-on-tinymce-edit">https://stackoverflow.com/questions/44890585/how-to-trigger-page-leave-warning-on-tinymce-edit</a></p>
+<pre class="brush:js;auto-links:false;toolbar:false" contenteditable="false">// leave  warning when modification not saved
+window.addEventListener('beforeunload', function(e) {
+var myPageIsDirty = tinymce.activeEditor.isDirty()
+if(myPageIsDirty) {
+    //following two lines will cause the browser to ask the user if they
+    //want to leave. The text of this dialog is controlled by the browser.
+    e.preventDefault(); //per the standard
+    e.returnValue = ''; //required for Chrome
+}
+//else: user is allowed to leave without a warning dialog
+});</pre>
+<p></p><h2>reload</h2>
+<p>當使用者編輯特定頁面時, 若該頁面有多個 h1, h2, h3 標註, 存擋時, 系統將會 reload, 回到根目錄, 以便完成分頁.</p>
+<p>或者當使用者刪除 editor 中的 h1, h2, 或 h3 內容, 導致完全沒有分頁標題時, 系統也必須 reload, 回到根目錄, 進行分頁.</p>
+<p>假如是在單頁編輯時, 修改標題的屬性, 目前選擇停留在編輯頁面.</p><h1>Develop</h1>
 <p>2021 Fall 的 <a href="https://github.com/mdecourse/cmsimde">CMSiMDE</a> 改版, 主要是將 Edit All 與 Edit 的編輯存檔改為 AJAX.</p>
-<h2>加入圖檔</h2>
-<p>因為在 AJAX 模式下, 對頁面存檔不會 refresh, 若使用者新增 h1, h2, h3 等三種頁面內容, 必須自行轉至 view page 後, 頁面才會進行分頁.</p>
-<p><img caption="false" height="264" src="/images/3yrs_camel.jpg" width="300"/></p>
-<p><img alt="" height="100" src="/images/bunny.png" width="71"/></p>
 <h1>AJAX</h1>
 <p>總共有四個地方進行修改:</p>
 <p>savepage 與 ssavepage 要 comment 將 \n 換為空字串的程式碼.</p>
@@ -89,127 +89,19 @@
                         &lt;textarea class='simply-editor' name='page_content' cols='50' rows='15'&gt;" +  \
                         editor_content + "&lt;/textarea&gt;&lt;input type='button' onClick='save_all()' value='save'&gt;"
         outstring +="""
-        &lt;script&gt;    
-        function tempAlert(msg,duration)
-            {
-             var el = document.createElement("div");
-             el.setAttribute("style","position:absolute;top:40%;left:20%;background-color:lightgreen;");
-             el.innerHTML = msg;
-             setTimeout(function(){
-              el.parentNode.removeChild(el);
-             },duration);
-             document.body.appendChild(el);
-            }
-        
-        function save_all(){
-            tinymce.activeEditor.execCommand('mceSave');
+        &lt;script&gt;
+        // leave  warning when modification not saved
+        window.addEventListener('beforeunload', function(e) {
+        var myPageIsDirty = tinymce.activeEditor.isDirty()
+        if(myPageIsDirty) {
+            //following two lines will cause the browser to ask the user if they
+            //want to leave. The text of this dialog is controlled by the browser.
+            e.preventDefault(); //per the standard
+            e.returnValue = ''; //required for Chrome
         }
+        //else: user is allowed to leave without a warning dialog
+        });
         
-        function save_all_data(form) {
-                var page_content = $('textarea#page_content').val();
-                
-                $.ajax({
-                    type: "POST",
-                    url: "/savePage",
-                    data: {"page_content": page_content},
-                    error: function(XMLHttpRequest, textStatus, errorThrown) {
-                        alert(XMLHttpRequest.status);
-                        alert(XMLHttpRequest.readyState);
-                        alert(textStatus);
-                    },
-                    success: function() {
-                        //document.getElementById("notice").innerHTML = "saved!";
-                        tempAlert("saved!", 700);
-                    }
-                 }); 
-        }
-        &lt;/script&gt;
-        """
-        outstring += "&lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;"
-    else:
-        # add viewpage button while single page editing
-        head, level, page = parse_content()
-        outstring = "&lt;p id='notice'&gt;&lt;/p&gt;"
-        outstring  += editor + "&lt;div class='container'&gt;&lt;nav&gt;" + \
-                        menu_input+"&lt;/nav&gt;&lt;section&gt;&lt;form onsubmit='return save_data(this)'&gt; \
-                        &lt;textarea class='simply-editor' id='page_content' name='page_content' cols='50' rows='15'&gt;" + \
-                        editor_content + "&lt;/textarea&gt;&lt;input type='hidden'  id='page_order' name='page_order' value='" + \
-                        str(page_order) + "'&gt;"
-        # add an extra collaborative save button
-        outstring += """&lt;input type="button" onClick="ssave()"  value="save"&gt;"""
-        outstring += """&lt;input type="button" onClick="cssave()"  value="csave"&gt;"""
-
-        outstring +="""
-        &lt;script&gt;    
-        
-        function tempAlert(msg,duration)
-            {
-             var el = document.createElement("div");
-             el.setAttribute("style","position:absolute;top:40%;left:20%;background-color:lightgreen;");
-             el.innerHTML = msg;
-             setTimeout(function(){
-              el.parentNode.removeChild(el);
-             },duration);
-             document.body.appendChild(el);
-            }
-            
-        // default action is "save"
-        var action ="save"
-        
-        function cssave(){
-            action = "csave";
-            tinymce.activeEditor.execCommand('mceSave');
-        }
-        
-        function ssave(){
-            action = "save";
-            tinymce.activeEditor.execCommand('mceSave');
-        }
-        
-        function save_data(form) {
-                var page_content = $('textarea#page_content').val();
-                var page_order = $('#page_order').val();
-                
-                $.ajax({
-                    type: "POST",
-                    url: "/ssavePage",
-                    data: {"page_content": page_content, "page_order": page_order, "action": action},
-                    error: function(XMLHttpRequest, textStatus, errorThrown) {
-                        alert(XMLHttpRequest.status);
-                        alert(XMLHttpRequest.readyState);
-                        alert(textStatus);
-                    },
-                    success: function() {
-                        //document.getElementById("notice").innerHTML = "saved!";
-                        tempAlert("saved!", 700);
-                    }
-                 }); 
-        }
-        &lt;/script&gt;
-        """
-        outstring += '''&lt;input type=button onClick="location.href='/get_page/''' + \
-                    head[page_order] + \
-                    ''''" value='viewpage'&gt;&lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;'''
-    return outstring
-
-
-</pre>
-<h2>Final</h2>
-<pre class="brush:py;auto-links:false;toolbar:false" contenteditable="false">def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
-    
-    """Tinymce editor scripts
-    """
-    
-    sitecontent =file_get_contents(config_dir + "content.htm")
-    editor = set_admin_css() + editorhead() + '''&lt;/head&gt;''' + editorfoot()
-    # edit all pages
-    if page_order is None:
-        outstring = editor + "&lt;div class='container'&gt;&lt;nav&gt;" + \
-                        menu_input + "&lt;/nav&gt;&lt;section&gt;&lt;form onsubmit='return save_all_data(this)'&gt; \
-                        &lt;textarea class='simply-editor' name='page_content' cols='50' rows='15'&gt;" +  \
-                        editor_content + "&lt;/textarea&gt;&lt;input type='button' onClick='save_all()' value='save'&gt;"
-        outstring +="""
-        &lt;script&gt;    
         function tempAlert(msg,duration)
             {
              var el = document.createElement("div");
@@ -275,7 +167,18 @@
         outstring += """&lt;input type="button" onClick="cssave()"  value="csave"&gt;"""
 
         outstring +="""
-        &lt;script&gt;    
+        &lt;script&gt;
+        // leave  warning when modification not saved
+        window.addEventListener('beforeunload', function(e) {
+        var myPageIsDirty = tinymce.activeEditor.isDirty()
+        if(myPageIsDirty) {
+            //following two lines will cause the browser to ask the user if they
+            //want to leave. The text of this dialog is controlled by the browser.
+            e.preventDefault(); //per the standard
+            e.returnValue = ''; //required for Chrome
+        }
+        //else: user is allowed to leave without a warning dialog
+        });
         
         function tempAlert(msg,duration)
             {
@@ -340,7 +243,5 @@
                     head[page_order] + \
                     ''''" value='viewpage'&gt;&lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;'''
     return outstring
-
-
+    
 </pre>
-<p><br/><br/></p>

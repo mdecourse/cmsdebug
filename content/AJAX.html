@@ -1,6 +1,6 @@
 <!DOCTYPE html><html>
         <head>
-        <title>CMSiMDE</title>
+        <title>CMSDEBUG</title>
         <meta charset="utf-8">
 <meta property="head" content="H1">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -128,7 +128,7 @@ img.add_border {
                             <li><a href="./../blog/index.html">blog</a></li>
                         </ul>
                       </li>
-                     <li class='has-children'><a href='About.html'>About</a><ul class='dropdown'><li><a href='Count tags.html'>Count tags</a></li></ul><li><a href='未存擋警告.html'>未存擋警告</a><li><a href='reload.html'>reload</a><li class='has-children'><a href='Develop.html'>Develop</a><ul class='dropdown'><li><a href='加入圖檔.html'>加入圖檔</a></li></ul><li class='has-children'><a href='AJAX.html'>AJAX</a><ul class='dropdown'><li><a href='Final.html'>Final</a></li>
+                     <li class='has-children'><a href='About.html'>About</a><ul class='dropdown'><li><a href='Count tags.html'>Count tags</a><li><a href='未存檔警告.html'>未存檔警告</a><li><a href='reload.html'>reload</a></li></ul><li><a href='Develop.html'>Develop</a><li><a href='AJAX.html'>AJAX</a></li>
                       </ul>
                 </nav>
               </div>
@@ -139,7 +139,7 @@ img.add_border {
           </div>
           
         </header>
-    <div id="tipue_search_content">加入圖檔 << <a href='加入圖檔.html'>Previous</a> <a href='Final.html'>Next</a> >> Final<br /><h1>AJAX</h1>
+    <div id="tipue_search_content">Develop << <a href='Develop.html'>Previous</a> <br /><h1>AJAX</h1>
 <p>總共有四個地方進行修改:</p>
 <p>savepage 與 ssavepage 要 comment 將 \n 換為空字串的程式碼.</p>
 <p>sh4tinymce 要讓程式碼二次編修能告知 editor, 修改函式如下:</p>
@@ -187,7 +187,19 @@ img.add_border {
                         &lt;textarea class='simply-editor' name='page_content' cols='50' rows='15'&gt;" +  \
                         editor_content + "&lt;/textarea&gt;&lt;input type='button' onClick='save_all()' value='save'&gt;"
         outstring +="""
-        &lt;script&gt;    
+        &lt;script&gt;
+        // leave  warning when modification not saved
+        window.addEventListener('beforeunload', function(e) {
+        var myPageIsDirty = tinymce.activeEditor.isDirty()
+        if(myPageIsDirty) {
+            //following two lines will cause the browser to ask the user if they
+            //want to leave. The text of this dialog is controlled by the browser.
+            e.preventDefault(); //per the standard
+            e.returnValue = ''; //required for Chrome
+        }
+        //else: user is allowed to leave without a warning dialog
+        });
+        
         function tempAlert(msg,duration)
             {
              var el = document.createElement("div");
@@ -217,7 +229,22 @@ img.add_border {
                     },
                     success: function() {
                         //document.getElementById("notice").innerHTML = "saved!";
-                        tempAlert("saved!", 700);
+                        parser = new DOMParser();
+                        parsed = parser.parseFromString(page_content, 'text/html');
+                        paragraphs = parsed.querySelectorAll('h1, h2, h3');
+                        //alert(paragraphs.length)
+                        //tempAlert("saved!", 700);
+
+                        if (paragraphs.length &gt; 1 || paragraphs.length == 0)
+                        {
+                            // when no title page will cause reload to error page
+                            //window.location.reload();
+                            document.location.href="/";
+                        }
+                        else
+                        {
+                            tempAlert("saved!", 700);
+                        }
                     }
                  }); 
         }
@@ -238,7 +265,18 @@ img.add_border {
         outstring += """&lt;input type="button" onClick="cssave()"  value="csave"&gt;"""
 
         outstring +="""
-        &lt;script&gt;    
+        &lt;script&gt;
+        // leave  warning when modification not saved
+        window.addEventListener('beforeunload', function(e) {
+        var myPageIsDirty = tinymce.activeEditor.isDirty()
+        if(myPageIsDirty) {
+            //following two lines will cause the browser to ask the user if they
+            //want to leave. The text of this dialog is controlled by the browser.
+            e.preventDefault(); //per the standard
+            e.returnValue = ''; //required for Chrome
+        }
+        //else: user is allowed to leave without a warning dialog
+        });
         
         function tempAlert(msg,duration)
             {
@@ -252,7 +290,7 @@ img.add_border {
             }
             
         // default action is "save"
-        var action ="save"
+        var action ="save";
         
         function cssave(){
             action = "csave";
@@ -279,7 +317,21 @@ img.add_border {
                     },
                     success: function() {
                         //document.getElementById("notice").innerHTML = "saved!";
-                        tempAlert("saved!", 700);
+                        parser = new DOMParser();
+                        parsed = parser.parseFromString(page_content, 'text/html');
+                        paragraphs = parsed.querySelectorAll('h1, h2, h3');
+                        //alert(paragraphs.length)
+                        //tempAlert("saved!", 700);
+
+                        if (paragraphs.length &gt; 1 || paragraphs.length == 0 )
+                        {
+                            //window.location.reload();
+                            document.location.href="/";
+                        }
+                        else
+                        {
+                            tempAlert("saved!", 700);
+                        }
                     }
                  }); 
         }
@@ -289,10 +341,8 @@ img.add_border {
                     head[page_order] + \
                     ''''" value='viewpage'&gt;&lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;'''
     return outstring
-
-
-</pre>
-<br />加入圖檔 << <a href='加入圖檔.html'>Previous</a> <a href='Final.html'>Next</a> >> Final</div>
+    
+</pre><br />Develop << <a href='Develop.html'>Previous</a> </div>
         
     <!-- footer -->
       <div class="container">

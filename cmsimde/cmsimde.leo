@@ -2343,7 +2343,19 @@ img.add_border {
                         &lt;textarea class='simply-editor' name='page_content' cols='50' rows='15'&gt;" +  \
                         editor_content + "&lt;/textarea&gt;&lt;input type='button' onClick='save_all()' value='save'&gt;"
         outstring +="""
-        &lt;script&gt;    
+        &lt;script&gt;
+        // leave  warning when modification not saved
+        window.addEventListener('beforeunload', function(e) {
+        var myPageIsDirty = tinymce.activeEditor.isDirty()
+        if(myPageIsDirty) {
+            //following two lines will cause the browser to ask the user if they
+            //want to leave. The text of this dialog is controlled by the browser.
+            e.preventDefault(); //per the standard
+            e.returnValue = ''; //required for Chrome
+        }
+        //else: user is allowed to leave without a warning dialog
+        });
+        
         function tempAlert(msg,duration)
             {
              var el = document.createElement("div");
@@ -2409,7 +2421,18 @@ img.add_border {
         outstring += """&lt;input type="button" onClick="cssave()"  value="csave"&gt;"""
 
         outstring +="""
-        &lt;script&gt;    
+        &lt;script&gt;
+        // leave  warning when modification not saved
+        window.addEventListener('beforeunload', function(e) {
+        var myPageIsDirty = tinymce.activeEditor.isDirty()
+        if(myPageIsDirty) {
+            //following two lines will cause the browser to ask the user if they
+            //want to leave. The text of this dialog is controlled by the browser.
+            e.preventDefault(); //per the standard
+            e.returnValue = ''; //required for Chrome
+        }
+        //else: user is allowed to leave without a warning dialog
+        });
         
         function tempAlert(msg,duration)
             {
@@ -2474,8 +2497,7 @@ img.add_border {
                     head[page_order] + \
                     ''''" value='viewpage'&gt;&lt;/form&gt;&lt;/section&gt;&lt;/body&gt;&lt;/html&gt;'''
     return outstring
-
-
+    
 </t>
 <t tx="leo.20190515144238.28">def unique(items):
     

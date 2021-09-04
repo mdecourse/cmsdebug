@@ -2674,7 +2674,19 @@ def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
                         <textarea class='simply-editor' name='page_content' cols='50' rows='15'>" +  \
                         editor_content + "</textarea><input type='button' onClick='save_all()' value='save'>"
         outstring +="""
-        <script>    
+        <script>
+        // leave  warning when modification not saved
+        window.addEventListener('beforeunload', function(e) {
+        var myPageIsDirty = tinymce.activeEditor.isDirty()
+        if(myPageIsDirty) {
+            //following two lines will cause the browser to ask the user if they
+            //want to leave. The text of this dialog is controlled by the browser.
+            e.preventDefault(); //per the standard
+            e.returnValue = ''; //required for Chrome
+        }
+        //else: user is allowed to leave without a warning dialog
+        });
+        
         function tempAlert(msg,duration)
             {
              var el = document.createElement("div");
@@ -2740,7 +2752,18 @@ def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
         outstring += """<input type="button" onClick="cssave()"  value="csave">"""
 
         outstring +="""
-        <script>    
+        <script>
+        // leave  warning when modification not saved
+        window.addEventListener('beforeunload', function(e) {
+        var myPageIsDirty = tinymce.activeEditor.isDirty()
+        if(myPageIsDirty) {
+            //following two lines will cause the browser to ask the user if they
+            //want to leave. The text of this dialog is controlled by the browser.
+            e.preventDefault(); //per the standard
+            e.returnValue = ''; //required for Chrome
+        }
+        //else: user is allowed to leave without a warning dialog
+        });
         
         function tempAlert(msg,duration)
             {
@@ -2805,8 +2828,7 @@ def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
                     head[page_order] + \
                     ''''" value='viewpage'></form></section></body></html>'''
     return outstring
-
-
+    
 def unique(items):
     
     """Make items element unique
