@@ -43,6 +43,12 @@ sys.path.insert(0,parentdir)
 #_curdir = os.path.join(os.getcwd(), os.path.dirname(__file__))
 _curdir = os.path.join(os.getcwd(), parentdir)
 import init
+# for start_static function
+#import os
+import subprocess
+import threading
+import http.server, ssl
+
 try:
     # 新增 user.py 使用者自訂延伸程式功能, 先前版本若要升級至新版本, 必須新增 user.py 檔案
     import user
@@ -65,7 +71,8 @@ initobj = init.Init()
 # 取 init.py 中 Init 類別中的 class uwsgi 變數 (static variable) 設定
 uwsgi = init.Init.uwsgi
 ip = init.Init.ip
-port = init.Init.port
+dynamic_port = init.Init.dynamic_port
+static_port = init.Init.static_port
 
 # 必須先將 download_dir 設為 static_folder, 然後才可以用於 download 方法中的 app.static_folder 的呼叫
 app = Flask(__name__)
@@ -262,14 +269,32 @@ def download_list():
             item_per_page = 10
         else:
             item_per_page = request.args.get('item_per_page')
+        
+        # only use lower case keyword to search filename
+        session.pop('download_keyword', "")
+        
         if not request.args.get('keyword'):
             keyword = ""
         else:
             keyword = request.args.get('keyword')
-            session['download_keyword'] = keyword
-    files = os.listdir(download_dir)
-    if keyword != "":
-        files = [elem for elem in files if str(keyword) in elem]
+        
+        session['download_keyword'] = keyword
+        # turn all english char of the filenames into lower cases
+        origFiles = os.listdir(download_dir)
+        files = []
+        #lowerCaseFiles = []
+        for i in range(len(origFiles)):
+            filename = origFiles[i]
+            lowerFilename = ""
+            for j in range(len(filename)):
+                uchar = filename[j]
+                if uchar >= u'\u4e00' and uchar<=u'\u9fa5':
+                    lowerFilename += uchar
+                else:
+                    lowerFilename += uchar.lower()
+            # check if lowerFilename contains keyword
+            if str(keyword) in lowerFilename:
+                files.append(filename)    
     files.sort()
     total_rows = len(files)
     totalpage = math.ceil(total_rows/int(item_per_page))
@@ -1052,7 +1077,7 @@ def get_page2(heading, head, edit, get_page_content = None):
     
     # edit=0 for viewpage
     if edit == 0:
-        return set_css2() + '''<div class='container'><nav>
+        return set_css2() + '''<div class='container-fluid'><nav>
         '''+ \
         directory + "<div id=\"tipue_search_content\">" + return_content + \
         '''</div>
@@ -1206,14 +1231,34 @@ def image_list():
             item_per_page = 10
         else:
             item_per_page = request.args.get('item_per_page')
+        
+        # only use lower case keyword to search filename
+        session.pop('image_keyword', "")
+        
         if not request.args.get('keyword'):
             keyword = ""
         else:
             keyword = request.args.get('keyword')
-            session['image_keyword'] = keyword
-    files = os.listdir(image_dir)
-    if keyword != "":
-        files = [elem for elem in files if str(keyword) in elem]
+        
+        session['image_keyword'] = keyword
+        
+        # turn all english char of the filenames into lower cases
+        origFiles = os.listdir(image_dir)
+        files = []
+        #lowerCaseFiles = []
+        for i in range(len(origFiles)):
+            filename = origFiles[i]
+            lowerFilename = ""
+            for j in range(len(filename)):
+                uchar = filename[j]
+                if uchar >= u'\u4e00' and uchar<=u'\u9fa5':
+                    lowerFilename += uchar
+                else:
+                    lowerFilename += uchar.lower()
+            # check if lowerFilename contains keyword
+            if str(keyword) in lowerFilename:
+                files.append(filename) 
+        
     files.sort()
     total_rows = len(files)
     totalpage = math.ceil(total_rows/int(item_per_page))
@@ -2271,6 +2316,12 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 <li><a href="/logout">Logout</a></li>
 <li><a href="/generate_pages">generate_pages</a></li>
 '''
+    # under uwsgi mode no start_static and static_port anchor links
+    if uwsgi != True:
+        outstring += '''
+<li><a href="/start_static">start_static</a></li>
+<li><a href="https://localhost:''' + str(static_port) +'''">''' + str(static_port) + '''</a></li>
+'''
     outstring += '''
 </ul>
 </confmenu></header>
@@ -2329,6 +2380,13 @@ window.location= 'https://' + location.host + location.pathname + location.searc
 <li><a href="/download_list">file list</a></li>
 <li><a href="/logout">logout</a></li>
 <li><a href="/generate_pages">generate_pages</a></li>
+'''
+        # under uwsgi mode no start_static and static_port  anchor links
+        # only added when user login as admin
+        if uwsgi != True:
+            outstring += '''
+<li><a href="/start_static">start_static</a></li>
+<li><a href="https://localhost:''' + str(static_port) +'''">''' + str(static_port) + '''</a></li>
 '''
     else:
         outstring += '''
@@ -2458,7 +2516,7 @@ def sitemap2(head):
     # 先改為使用 render_menu3 而非 render_menu2
     sitemap = render_menu3(head, level, page, sitemap=1)
     # add tipue search id
-    return set_css2() + "<div class='container'><nav>" + directory + \
+    return set_css2() + "<div class='container-fluid'><nav>" + directory + \
              "</nav><section><h1>Site Map</h1><div id=\"tipue_search_content\"></div>" + sitemap + \
              "</section></div></body></html>"
 
@@ -2494,9 +2552,8 @@ def ssavePage():
         return redirect("/login")
     if page_content is None:
         return error_log("no content to save!")
-
-   # 請注意, 若啟用 fullpage plugin 這裡的 page_content tinymce4 會自動加上 html 頭尾標註
-    # for ajax need to comment the next line
+    # 請注意, 若啟用 fullpage plugin 這裡的 page_content tinymce4 會自動加上 html 頭尾標註
+    # for ajax save comment the next line
     #page_content = page_content.replace("\n","")
     head, level, page = parse_content()
     original_head_title = head[int(page_order)]
@@ -2545,6 +2602,20 @@ def ssavePage():
         return redirect("/")
 
 
+@app.route('/start_static/')
+def start_static():
+    # build directory
+    #os.chdir("./../")
+    server_address = ('localhost', static_port)
+    httpd = http.server.HTTPServer(server_address, http.server.SimpleHTTPRequestHandler)
+    httpd.socket = ssl.wrap_socket(httpd.socket,
+                                   server_side=True,
+                                   certfile='./localhost.crt',
+                                   keyfile='./localhost.key',
+                                   ssl_version=ssl.PROTOCOL_TLSv1_2)
+    #print(os.getcwd())
+    #print(static_port + " https server started")
+    httpd.serve_forever()
 def syntaxhighlight():
     
     """Return syntaxhighlight needed scripts
@@ -2632,34 +2703,6 @@ img.add_border {
 '''
 
 
-def tinymce_editor_origin(menu_input=None, editor_content=None, page_order=None):
-    
-    """Tinymce editor scripts
-    """
-    
-    sitecontent =file_get_contents(config_dir + "content.htm")
-    editor = set_admin_css() + editorhead() + '''</head>''' + editorfoot()
-    # edit all pages
-    if page_order is None:
-        outstring = editor + "<div class='container'><nav>" + \
-                        menu_input + "</nav><section><form method='post' action='savePage'> \
-                        <textarea class='simply-editor' name='page_content' cols='50' rows='15'>" +  \
-                        editor_content + "</textarea><input type='submit' value='save'> \
-                        </form></section></body></html>"
-    else:
-        # add viewpage button while single page editing
-        head, level, page = parse_content()
-        outstring = editor + "<div class='container'><nav>" + \
-                        menu_input+"</nav><section><form method='post' action='/ssavePage'> \
-                        <textarea class='simply-editor' name='page_content' cols='50' rows='15'>" + \
-                        editor_content + "</textarea><input type='hidden' name='page_order' value='" + \
-                        str(page_order) + "'><input type='submit' name='action' value='save'>"
-        # add an extra collaborative save button
-        outstring += "<input type='submit' name='action' value='csave'>"
-        outstring += '''<input type=button onClick="location.href='/get_page/''' + \
-                    head[page_order] + \
-                    ''''" value='viewpage'></form></section></body></html>'''
-    return outstring
 def tinymce_editor(menu_input=None, editor_content=None, page_order=None):
     
     """Tinymce editor scripts

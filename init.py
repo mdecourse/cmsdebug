@@ -12,7 +12,8 @@ class Init(object):
     uwsgi = False
     site_title = "CMSDEBUG"
     ip = "127.0.0.1"
-    port = 9443
+    dynamic_port = 9448
+    static_port = 8448
     def __init__(self):
         # hope to create downloads and images directories　
         if not os.path.isdir(_curdir + "/downloads"):
